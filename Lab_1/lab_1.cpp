@@ -22,24 +22,23 @@ std::string word_detector(std::string input)
     std::string word_with_vowels = "";
     for (int i = 0; i < input.length(); i++)
     {
-        // std::cout << isVowel(word[i]);
         char *last_char = &input.back();
 
-        // std::cout << last_char << " " << *last_char << " " << &last_char << std::endl;
-
         // last char
-        if (last_char == &input[i]) // returns word even if last is consonant
+        if (last_char == &input[i])
         {
             if (isVowel(input[i]))
             {
                 word_with_vowels += input[i];
             };
-            if (!isVowel(input[i]))
+            if (!isVowel(input[i]) && isalpha(input[i]))
             {
                 word_with_vowels = "";
             }
-            std::cout << "last char " << input[i] << ", returning ";
-            std::cout << " " << word_with_vowels;
+            if (word_with_vowels != "")
+            {
+                std::cout << " answer(" << word_with_vowels << ")";
+            };
             return word_with_vowels;
         }
 
@@ -47,13 +46,11 @@ std::string word_detector(std::string input)
         {
             if (isVowel(input[i]))
             {
-                std::cout << "vowel:" << (input[i]) << " ";
                 word_with_vowels += input[i];
                 continue;
             }
             else // consonant
             {
-                std::cout << "consonant:" << (input[i]) << " ";
                 word_with_vowels = "";
                 for (int j = i; j < input.length(); j++)
                 {
@@ -64,27 +61,27 @@ std::string word_detector(std::string input)
                         break;
                     };
                 };
-                std::cout << " " << word_with_vowels;
+                if (word_with_vowels != "")
+                {
+                    std::cout << " answer(" << word_with_vowels << ")";
+                };
                 return word_with_vowels;
             }
         }
-        else
+        else // symbol
         {
-            std::cout << "non alpha:" << (input[i]) << " ";
             if (last_char != &input[i])
-
             {
                 input.erase(0, i + 1);
                 word_detector(input);
-                if (!word_with_vowels.empty())
+                if (word_with_vowels != "")
                 {
-                    std::cout << " " << word_with_vowels;
-                    return word_with_vowels;
-                }
+                    std::cout << " answer(" << word_with_vowels << ")";
+                };
+                return word_with_vowels;
             }
         };
     };
-    return "";
 };
 
 int main()
@@ -95,19 +92,11 @@ int main()
     std::istream_iterator<std::string> endIterator;
     while (fileIterator != endIterator)
     {
-        // skip/ignore first char if not a letter
-        // skip if start consonant
-
-        // skip if new char consonant
-        // stop if new char not a letter + write as a func and start recursively if next is non letter and not last
-
         std::string word = *fileIterator;
         std::cout << '\n'
                   << *fileIterator << '\n';
-
         word_detector(word);
         ++fileIterator;
     };
-
     return 0;
 }
