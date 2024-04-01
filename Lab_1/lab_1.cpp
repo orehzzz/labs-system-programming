@@ -11,10 +11,52 @@ struct Node
     struct Node *next;
 };
 
+void displayList(struct Node *node)
+{
+    while (node != NULL)
+    {
+        std::cout << node->data << "-->";
+        node = node->next;
+    }
+
+    if (node == NULL)
+    {
+        std::cout << "null";
+    }
+};
+
+void insert(struct Node *head, std::string value)
+{
+    struct Node *newNode = new Node;okay honey
+
+    /* 3. set next of new node as head */
+    *newNode->next = *head;
+
+    /* 4. move the head to point to the new node */
+    *head = *newNode;
+};
+
 bool isVowel(char c)
 {
     c = tolower(c);
     return c == 'a' || c == 'o' || c == 'u' || c == 'i' || c == 'y' || c == 'e';
+};
+
+bool word_check(struct Node *node, std::string word)
+{
+    if (word == "")
+    {
+        return 0;
+    };
+    while (node != NULL)
+    {
+        if (node->data == word)
+        {
+            return 0;
+        };
+        node = node->next;
+    }
+    return 1;
 };
 
 std::string word_detector(std::string input)
@@ -23,6 +65,24 @@ std::string word_detector(std::string input)
     for (int i = 0; i < input.length(); i++)
     {
         char *last_char = &input.back();
+
+        if (word_with_vowels.length() > 30)
+        {
+            for (int j = i; j < input.length(); j++)
+            {
+                if ((!isalpha(input[j])) && (last_char != &input[j]))
+                {
+                    input.erase(0, j + 1);
+                    word_detector(input);
+                    break;
+                };
+            };
+            if (word_with_vowels != "")
+            {
+                std::cout << " answer(" << word_with_vowels << ")";
+            };
+            return "";
+        }
 
         // last char
         if (last_char == &input[i])
@@ -90,6 +150,11 @@ int main()
     std::ifstream file("Test2.txt");
     std::istream_iterator<std::string> fileIterator(file);
     std::istream_iterator<std::string> endIterator;
+
+    struct Node *head = NULL;
+    insert(head, "lol");
+    displayList(head);
+
     while (fileIterator != endIterator)
     {
         std::string word = *fileIterator;
