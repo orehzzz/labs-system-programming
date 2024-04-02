@@ -5,36 +5,7 @@
 #include <list>
 #include <cctype>
 
-struct Node
-{
-    std::string data;
-    struct Node *next;
-};
-
-void displayList(struct Node *node)
-{
-    while (node != NULL)
-    {
-        std::cout << node->data << "-->";
-        node = node->next;
-    }
-
-    if (node == NULL)
-    {
-        std::cout << "null";
-    }
-};
-
-void insert(struct Node *head, std::string value)
-{
-    struct Node *newNode = new Node;okay honey
-
-    /* 3. set next of new node as head */
-    *newNode->next = *head;
-
-    /* 4. move the head to point to the new node */
-    *head = *newNode;
-};
+std::list<std::string> result;
 
 bool isVowel(char c)
 {
@@ -42,20 +13,16 @@ bool isVowel(char c)
     return c == 'a' || c == 'o' || c == 'u' || c == 'i' || c == 'y' || c == 'e';
 };
 
-bool word_check(struct Node *node, std::string word)
+bool add_if_unique(std::string word)
 {
-    if (word == "")
+    for (std::string n : result)
     {
-        return 0;
-    };
-    while (node != NULL)
-    {
-        if (node->data == word)
+        if (n == word)
         {
             return 0;
-        };
-        node = node->next;
-    }
+        }
+    };
+    result.push_front(word);
     return 1;
 };
 
@@ -68,6 +35,7 @@ std::string word_detector(std::string input)
 
         if (word_with_vowels.length() > 30)
         {
+            word_with_vowels = "";
             for (int j = i; j < input.length(); j++)
             {
                 if ((!isalpha(input[j])) && (last_char != &input[j]))
@@ -77,12 +45,8 @@ std::string word_detector(std::string input)
                     break;
                 };
             };
-            if (word_with_vowels != "")
-            {
-                std::cout << " answer(" << word_with_vowels << ")";
-            };
             return "";
-        }
+        };
 
         // last char
         if (last_char == &input[i])
@@ -91,16 +55,16 @@ std::string word_detector(std::string input)
             {
                 word_with_vowels += input[i];
             };
-            if (!isVowel(input[i]) && isalpha(input[i]))
+            if ((!isVowel(input[i]) && isalpha(input[i])) || word_with_vowels.length() > 30)
             {
                 word_with_vowels = "";
             }
             if (word_with_vowels != "")
             {
-                std::cout << " answer(" << word_with_vowels << ")";
+                add_if_unique(word_with_vowels);
             };
             return word_with_vowels;
-        }
+        };
 
         if (isalpha(input[i]))
         {
@@ -123,7 +87,7 @@ std::string word_detector(std::string input)
                 };
                 if (word_with_vowels != "")
                 {
-                    std::cout << " answer(" << word_with_vowels << ")";
+                    add_if_unique(word_with_vowels);
                 };
                 return word_with_vowels;
             }
@@ -136,7 +100,7 @@ std::string word_detector(std::string input)
                 word_detector(input);
                 if (word_with_vowels != "")
                 {
-                    std::cout << " answer(" << word_with_vowels << ")";
+                    add_if_unique(word_with_vowels);
                 };
                 return word_with_vowels;
             }
@@ -151,17 +115,19 @@ int main()
     std::istream_iterator<std::string> fileIterator(file);
     std::istream_iterator<std::string> endIterator;
 
-    struct Node *head = NULL;
-    insert(head, "lol");
-    displayList(head);
-
     while (fileIterator != endIterator)
     {
-        std::string word = *fileIterator;
-        std::cout << '\n'
-                  << *fileIterator << '\n';
-        word_detector(word);
+        std::string string_between_spaces = *fileIterator;
+        // std::cout << '\n'
+        //           << *fileIterator << '\n';
+        word_detector(string_between_spaces);
         ++fileIterator;
     };
+
+    for (std::string word : result)
+    {
+        std::cout << word << " ";
+    }
+
     return 0;
 }
