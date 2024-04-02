@@ -3,7 +3,6 @@
 #include <string>
 #include <iterator>
 #include <list>
-#include <cctype>
 
 std::list<std::string> result;
 
@@ -19,115 +18,78 @@ bool add_if_unique(std::string word)
     {
         if (n == word)
         {
-            return 0;
+            return -1;
         }
     };
     result.push_front(word);
-    return 1;
-};
-
-std::string word_detector(std::string input)
-{
-    std::string word_with_vowels = "";
-    for (int i = 0; i < input.length(); i++)
-    {
-        char *last_char = &input.back();
-
-        if (word_with_vowels.length() > 30)
-        {
-            word_with_vowels = "";
-            for (int j = i; j < input.length(); j++)
-            {
-                if ((!isalpha(input[j])) && (last_char != &input[j]))
-                {
-                    input.erase(0, j + 1);
-                    word_detector(input);
-                    break;
-                };
-            };
-            return "";
-        };
-
-        // last char
-        if (last_char == &input[i])
-        {
-            if (isVowel(input[i]))
-            {
-                word_with_vowels += input[i];
-            };
-            if ((!isVowel(input[i]) && isalpha(input[i])) || word_with_vowels.length() > 30)
-            {
-                word_with_vowels = "";
-            }
-            if (word_with_vowels != "")
-            {
-                add_if_unique(word_with_vowels);
-            };
-            return word_with_vowels;
-        };
-
-        if (isalpha(input[i]))
-        {
-            if (isVowel(input[i]))
-            {
-                word_with_vowels += input[i];
-                continue;
-            }
-            else // consonant
-            {
-                word_with_vowels = "";
-                for (int j = i; j < input.length(); j++)
-                {
-                    if ((!isalpha(input[j])) && (last_char != &input[j]))
-                    {
-                        input.erase(0, j + 1);
-                        word_detector(input);
-                        break;
-                    };
-                };
-                if (word_with_vowels != "")
-                {
-                    add_if_unique(word_with_vowels);
-                };
-                return word_with_vowels;
-            }
-        }
-        else // symbol
-        {
-            if (last_char != &input[i])
-            {
-                input.erase(0, i + 1);
-                word_detector(input);
-                if (word_with_vowels != "")
-                {
-                    add_if_unique(word_with_vowels);
-                };
-                return word_with_vowels;
-            }
-        };
-    };
+    return 0;
 };
 
 int main()
 {
-
     std::ifstream file("Test2.txt");
-    std::istream_iterator<std::string> fileIterator(file);
-    std::istream_iterator<std::string> endIterator;
+    std::istreambuf_iterator<char> iter(file);
+    std::istreambuf_iterator<char> endIter;
+    std::string word_of_vowels;
 
-    while (fileIterator != endIterator)
+    while (iter != endIter)
     {
-        std::string string_between_spaces = *fileIterator;
-        // std::cout << '\n'
-        //           << *fileIterator << '\n';
-        word_detector(string_between_spaces);
-        ++fileIterator;
+        // word.length() == 30: *iter letter -> iter ++ to non letter. non-letter -> add. CLEAR ANYWAY
+        if (word_of_vowels.length() == 30)
+        {
+            if (isalpha(*iter))
+            {
+                while (isalpha(*iter) && (iter != endIter))
+                {
+                    ++iter;
+                };
+            }
+            else
+            {
+                add_if_unique(word_of_vowels);
+                ++iter;
+            };
+            word_of_vowels = "";
+            continue;
+        }
+
+        // vowel: add to word, ++iter
+        if (isVowel(*iter))
+        {
+            word_of_vowels += *iter;
+            ++iter;
+            continue;
+        }
+        // consonant: clear word, move to non-letter
+        else if (isalpha(*iter))
+        {
+            word_of_vowels = "";
+            while (isalpha(*iter) && (iter != endIter))
+            {
+                ++iter;
+            };
+            continue;
+        }
+        // non-letter: add word if word not empty(and make word empty afterwards), ++iter
+        else
+        {
+            if (word_of_vowels != "")
+            {
+                add_if_unique(word_of_vowels);
+            };
+            word_of_vowels = "";
+            ++iter;
+        };
+    };
+    if (word_of_vowels != "")
+    {
+        add_if_unique(word_of_vowels);
     };
 
     for (std::string word : result)
     {
         std::cout << word << " ";
-    }
+    };
 
     return 0;
-}
+};
