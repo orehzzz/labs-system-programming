@@ -85,7 +85,7 @@ bool read_instructions(std::string instructions)
     return true;
 }
 
-bool validate_input_word(std::string inputWord)
+bool validate_input_word(std::string inputWord) // add check if in end state then add as suggestion
 {
     currentState = startState;
     for (char letter : inputWord)
@@ -133,77 +133,105 @@ bool is_unique(std::string newWord)
     return 1;
 };
 
+bool is_forbidden_transition(int transition, std::list<int> forbidden_transitions)
+{
+    for (int forbidden_transition : forbidden_transitions)
+    {
+        if (transition == forbidden_transition)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void autocomlete_word(std::string inputWord)
 {
-    std::string word = inputWord;
+    std::string word;
     int currentWordState = currentState;
     bool should_continue = true;
-    std::vector<int> current_transitions;
+    std::vector<int> current_states;
     std::map<int, std::set<int>> tried_transitions;
+    std::list<int> forbidden_transitions;
+    int last_transition = -1;
+
+    current_states.push_back(currentWordState);
+
     while (should_continue)
     {
-        std::cout << "Current word_state: " << currentWordState << std::endl;
         if (word.length() > 10)
         {
             break;
         }
 
         bool transition_found = false;
-        for (int i = 0; i < transitions.size(); i++)
+        // std::cout << "Current word_state: " << currentWordState << std::endl;
+        // std::cout << "word: " << word<< std::endl;
+        for (int i = 0; i < transitions.size(); i++) //check all transitions
         {
-            if (transitions[i][0] - '0' == currentWordState) // tried_transitions[currentWordState].find(i) == tried_transitions[currentWordState].end()
+            std::cout << "Forbidden transition: ";
+            for (int forbidden_transition : forbidden_transitions)
+            {
+                std::cout << forbidden_transition;
+            }
+            std::cout << std::endl;
+            if ((transitions[i][0] - '0' == currentWordState) && (!is_forbidden_transition(i, forbidden_transitions)))
             {
                 word += transitions[i][1];
+                // std::cout << "Transition: " << transitions[i][0] << " " << transitions[i][1] << " " << transitions[i][2] << std::endl;
                 tried_transitions[currentWordState].insert(i); // position of function, count from 0
                 currentWordState = transitions[i][2] - '0';
                 should_continue = true;
                 transition_found = true;
-                current_transitions.push_back(i);
-            }
-            if (isEndState(currentWordState) && is_unique(word))
-            {
-                suggestions.push_back(word);
-                transition_found = true;
-                should_continue = false;
-                std::cout << "Tried Transitions: " << std::endl;
-                for (const auto &entry : tried_transitions)
+                current_states.push_back(i); //
+                last_transition = i;
+
+                if (isEndState(currentWordState))
                 {
-                    std::cout << "State " << entry.first << ": ";
-                    for (int transition : entry.second)
+                    if (is_unique(inputWord + word))
                     {
-                        std::cout << transition << " ";
+                        forbidden_transitions.clear();
+                        suggestions.push_back(inputWord + word);
+
+                        // std::cout << "Suggestion: " << inputWord + word << std::endl;
+
+                        current_states.clear();
+
+
+                        transition_found = true;//to not go back
+                        should_continue = false;
+                        
+                        // std::cout << "Tried Transitions: " << std::endl;
+                        // for (const auto &entry : tried_transitions)
+                        // {
+                        //     std::cout << "State " << entry.first << ": ";
+                        //     for (int transition : entry.second)
+                        //     {
+                        //         std::cout << transition << " ";
+                        //     }
+                        //     std::cout << std::endl;
+                        // }
+                        break;
                     }
-                    std::cout << std::endl;
                 }
-                break;
             }
+
         }
-        // when in dead end or was (need multiple steps back)(add counter) and it is already in suggestions return via transitions_history 1 step and dont use last(current) transition
-        if (!transition_found || !is_unique(word))
+        //after adding(or not) a letter, if no transition found, go back 1 step (+ban transition)
+        if (!transition_found)
         {
-            if (!current_transitions.empty())
+            if (word.length() == 0) //in initisl state, all transitions tried
             {
-                current_transitions.pop_back(); // remove last transition
-                if (!current_transitions.empty())
-                {
-                    // return to the state of the last transition
-                    int last_transition = current_transitions.back();
-                    currentWordState = transitions[last_transition][0] - '0';
-                    // remove the last character from the word
-                    word.pop_back();
-                }
-                else
-                {
-                    // no more transitions to backtrack, break the loop
-                    break;
-                }
-            }
-            else
-            {
-                // no more transitions to backtrack, break the loop
                 break;
             }
+            forbidden_transitions.push_back(last_transition);
+            word.pop_back();
+            current_states.pop_back();
+            currentWordState = current_states.back();
         }
+        // std::cout << "State after iteration: " << currentWordState << std::endl;
+        // std::cout << "Word after iteration: " << inputWord + word << std::endl;
+
     }
 }
 
@@ -220,16 +248,36 @@ int main()
         return 0;
     }
 
-    for (int i = 0; i < SUGGESTIONS_COUNT; i++)
+    // for (int i = 0; i < SUGGESTIONS_COUNT; i++)
+    // {
+    //     std::cout << "Autocomplete" << i + 1 << ':'<< std::endl;
+    //     autocomlete_word(inputWord);
+    // }
+
+    std::cout << "(press \"Enter\" for more or type anything to exit)\n Suggestions: " << std::endl;
+    std::string user_input = "";
+    std::string last_suggestion = "";
+    std::getline(std::cin, user_input);
+    while (user_input == "")
     {
         autocomlete_word(inputWord);
+        if (suggestions.back() != last_suggestion)
+        {
+            std::cout << suggestions.back() << std::endl;
+            last_suggestion = suggestions.back();
+            std::getline(std::cin, user_input);
+        }else{
+            std::cout << "That's all" << std::endl;
+            break;
+        }
     }
 
-    std::cout << "Suggestions: " << std::endl;
-    for (std::string suggestion : suggestions)
-    {
-        std::cout << suggestion << std::endl;
-    }
+    std::cout << "End of program" << std::endl;
+
+    // for (std::string suggestion : suggestions)
+    // {
+    //     std::cout << suggestion << std::endl;
+    // }
 
     return 0;
 }
