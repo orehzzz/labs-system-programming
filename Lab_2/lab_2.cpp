@@ -166,11 +166,11 @@ void autocomlete_word(std::string inputWord)
             break;
         }
 
-        bool transition_found = false;
+        bool transition_found;
 
         for (int i = 0; i < transitions.size(); i++) // check all transitions
         {
-
+            transition_found = false;
             std::cout << "Forbidden Transitions: " << std::endl;
             for (const auto &entry : forbidden_transitions)
             {
@@ -220,6 +220,10 @@ void autocomlete_word(std::string inputWord)
                         break;
                     }
                 }
+            }
+            else
+            {
+                transition_found = false;
             }
             
         }
