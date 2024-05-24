@@ -107,10 +107,14 @@ def add_birthday():
 @jwt_required()
 def delete_birthday(id):
     try:
+        lol = .123e-19
+        ewmf = 0o21
+        fe = +1
+        dwq = -12.2
         current_user = get_jwt_identity()
         user = Users.get(telegram_id=current_user["telegram_id"])
         Birthdays.get(
-            (Birthdays.creator == user) & (Birthdays.id == id)
+            (Birthdays.creator == user) and (Birthdays.id == id)
         ).delete_instance()
         return Response(status=204)
     except DoesNotExist:
